@@ -10,3 +10,5 @@ Ensuite, compiler les programmes treeload et treesearch avec "make" en se mettan
 en paramètre par rapport à ce qu'il a enregistré dans le treeload.
 
 Vous pouvez éxécuter treesearch autant de fois que vous le voulez.
+
+Retrouver le code sur github : https://github.com/Adrienboucherie/ProjetCPartie2/
