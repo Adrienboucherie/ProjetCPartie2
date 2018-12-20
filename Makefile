@@ -1,13 +1,7 @@
-	# règle implicite
-%: %.c
-	gcc -Wall -o $@ $@.c
+all : treeload treesearch
 
-	# règles spécifiques
-treetest: treetest.c
-	gcc -Wall -o $@ $@.c -lreadline -LmyLib -lmylib
+treesearch : treesearch.c mylib/libmylib.a
+	gcc -Wall -o $@ $@.c -lreadline -Lmylib -lmylib
 
-treeload: treeload.c
-	gcc -Wall -o $@ $@.c -lreadline -LmyLib -lmylib
-
-treesearch: treesearch.c
-		gcc -Wall -o $@ $@.c -lreadline -LmyLib -lmylib
+treeload : treeload.c mylib/libmylib.a
+	gcc -Wall -o $@ $@.c -lreadline -Lmylib -lmylib

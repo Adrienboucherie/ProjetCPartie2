@@ -1,0 +1,12 @@
+Documentation de l'utilisation des programmes.
+
+Premièrement, compiler la lib avec "make" en se situant dans la lib.
+
+Ensuite, compiler les programmes treeload et treesearch avec "make" en se mettant à la racine du fichier.
+
+-Exécuter treeload en premier (./treeload) afin de charger les informations dans la liste chainée (récursivement en partant de /var/).
+
+-Exécuter treesearch (./treesearch NOMDUFICHIER) avec le nom du fichier en paramètre. treesearch va envoyer un signal à treeload qui va chercher le fichier
+en paramètre par rapport à ce qu'il a enregistré dans le treeload.
+
+Vous pouvez éxécuter treesearch autant de fois que vous le voulez.

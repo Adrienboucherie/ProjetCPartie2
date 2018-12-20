@@ -1,80 +1,96 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-#include "myLib/mylib.h"
-#include <sys/types.h>
-#include <dirent.h>
-#include <signal.h>
+#include "mylib/mylib.h"
 
-#define CONFIGFILE "tree.conf"
-#define L 100
 
-	FILE *config; 
-	FILE *configPID;
-    FILE *configDATA;					//Fichier de conf
-	char configL[L]; 
-    char DATA[L];				//Ligne du fichier de conf
-	char rootdir[L]; 				//Repertoire de base dans le fichier tree.conf
-	char datafile[L];
-	char pidfile[L];
-	char v1[L], v2[L]; 		
-	Liste liste = NULL;				//Initialisation de la liste
+FILE *config = NULL;
+FILE *DATAFILE = NULL;
+FILE *PIDFILE = NULL;
+arborescence Liste = NULL;
 
-void handler(){
-configDATA = fopen(datafile, "r");
-fgets(DATA, L-1, configDATA);
-fclose(configDATA);
-search(DATA, liste);
+
+void handler()
+{	
+	char DATA[L];
+	char DIR_SEARCHED[L];
+
+
+	config = fopen(FICHIER_CONFIG, "r");
+
+	
+		while (strcmp((fgets(DATA,10,config)), "datafile=") != 0); 
+		fgets(DATA,L,config); 				
+		DATA[strlen(DATA)-1] = 0 ; 	
+	
+
+	fclose(config);
+
+
+		DATAFILE = fopen(DATA, "r");	
+		fgets(DIR_SEARCHED,L,DATAFILE);   //On récupère le fichier a chercher qui se situe dans /tmp/treeload.data
+		search(DIR_SEARCHED, Liste); 
+		fclose(DATAFILE);
 }
 
-int main(int nbarg, char *args[])
-{
 
 
-	liste = malloc(sizeof(struct dirItem)); 			//Allocation de mémoire à la liste
-
-	config = fopen(CONFIGFILE,"r");					//Ouvre le fichier tree.conf
-	if(config == NULL){								//Si il est vide, retourne 1
-		perror (CONFIGFILE);
-		return 1;
-	}
-
-	while(fgets(configL,L-1,config)!=NULL){				//Tant qu'il y a du contenu dans tree.conf
-  		if(configL[0] != '#'){							//Si la ligne ne commence pas par "#"
-  			parse(configL, v1, v2);						//Sépare la variable de sa valeur
-  			//printf("\"%s\" : \"%s\" \n", v1, v2);		//Affiche la variable : la valeur
-  			if(strcmp(v1, rootdir)){
-  				strcpy(rootdir, v2);
-  			}
-			if(strcmp(v1, datafile)){
-				strcpy(datafile, v2);
-			}
-			if(strcmp(v1, pidfile)){
-				strcpy(pidfile, v2);
-			}
-  		}
-	}
-
-	load_liste(rootdir, &liste);	//Charge la liste à partir du fichier de conf (recursif)
-
-	
+int main(int argc, char  *argv[])
+{	
+	char rootdir[L];
 	char PID[L];
-	configPID = fopen(pidfile,"w+");
-	sprintf(PID, "%i", getpid());
-	fputs(PID, configPID);
-	printf("%s", PID);
-	fclose(configPID);
-	
+	char pidTreeload[L];
 
-	
-	signal(SIGHUP, handler);
-	for(;;);
 
-	//printf("Chemin(s) vers %s \n", args[1]);
-	//search(args[1], liste); //Cherche l'argument placé dans l'appel du programme dans la liste (puis de façon recursive)
 
-	return 0;
+	config = fopen(FICHIER_CONFIG, "r");
+
+	if (config==NULL)
+	{
+		perror(FICHIER_CONFIG) ;
+		return 1 ;
+	}
+	else
+	{	
+		
+		while (strcmp((fgets(rootdir,9,config)), "rootdir=") != 0);
+		fgets(rootdir,L,config); 				
+		rootdir[strlen(rootdir)-1] = 0 ; 		
+
+		fseek(config, 0, SEEK_SET); 			
+
+        while (strcmp((fgets(PID,9,config)), "pidfile=") != 0); 
+        fgets(PID,L,config); 			
+        PID[strlen(PID)-1] = 0 ; 	
+
+
+
+
+			load(rootdir, &Liste); // On charge les infos a partir de /var/ dans une liste chainée
+		
+
+
+		
+
+	   	PIDFILE = fopen(PID,"w+");
+
+	    if(PIDFILE==NULL)
+	    {
+	        perror(PID); 
+	    }
+	    else
+	    {
+		    sprintf(pidTreeload, "%d", getpid());	//On récupère le PID 
+		    fputs(pidTreeload,PIDFILE);		// on écrit le pid dans /tmp/treeload.pid
+	    }
+
+	    fclose(PIDFILE);
+
+
+
+	  	signal(SIGHUP, handler);  //On attend le signal
+		for(;;); 				  //On fait une boucle infinie pour que le programme ne s'arrête pas et qu'on puisse envoyer plusieurs signaux
+	}
+
+	fclose(config);
+
+return 0;
+
 }
